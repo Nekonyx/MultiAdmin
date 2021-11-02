@@ -1,6 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 using MultiAdmin.ConsoleTools;
+using MultiAdmin.Features;
 using MultiAdmin.Utility;
 
 namespace MultiAdmin.ServerIO
@@ -172,7 +173,15 @@ namespace MultiAdmin.ServerIO
 					// Don't print any MultiAdmin events
 					return;
 				}
+
+				if (lowerMessage.Trim() == $"command {FreezeKiller.PingCommand} does not exist!")
+				{
+					FreezeKiller.ResetCounter();
+					return;
+				}
 			}
+
+
 
 			server.Write(coloredMessage);
 		}

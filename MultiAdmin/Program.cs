@@ -172,6 +172,13 @@ namespace MultiAdmin
 
 								if (timeWaited >= server.ServerConfig.SafeShutdownTimeout.Value)
 								{
+									server.KillGame();
+
+									if (!server.IsGameProcessRunning)
+									{
+										break;
+									}
+
 									Write(
 										string.IsNullOrEmpty(server.serverId)
 											? $"Failed to stop the default server within {timeWaited} ms, giving up..."

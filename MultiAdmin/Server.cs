@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MultiAdmin.Config;
@@ -534,7 +535,7 @@ namespace MultiAdmin
 			SetStopStatus(killGame);
 
 			if ((killGame || !SendMessage("QUIT")) && IsGameProcessRunning)
-				GameProcess.Kill();
+				KillGame();
 		}
 
 		public void SetRestartStatus()
@@ -552,7 +553,29 @@ namespace MultiAdmin
 			SetRestartStatus();
 
 			if ((killGame || !SendMessage("SOFTRESTART")) && IsGameProcessRunning)
-				GameProcess.Kill();
+				KillGame();
+		}
+
+		[DllImport("libc", SetLastError = true, EntryPoint = "kill")]
+		private static extern int sys_kill(int pid, int sig);
+
+		public void KillGame()
+		{
+			// SIGTERM
+			GameProcess.Kill();
+
+			// SIGKILL for Linux
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+			{
+				Write("Waiting for 2500 milliseconds...", ConsoleColor.Yellow);
+				Thread.Sleep(2500);
+
+				if (IsGameProcessRunning)
+				{
+					Write("Sending a SIGKILL signal...", ConsoleColor.Red);
+					sys_kill(GameProcess.Id, 9);
+				}
+			}
 		}
 
 		#endregion
